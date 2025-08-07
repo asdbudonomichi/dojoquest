@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dino Game Clone</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000000;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    #startScreen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #1c02de;
+      color: white;
+    }
+
+    #startButton {
+      padding: 15px 30px;
+      font-size: 22px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #game {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      max-height: 650px;
+      background: url('sfondo.jpg') no-repeat center center;
+      border-bottom: 1.5px solid #ff0000;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #dino {
+      width: 125px;
+      height: 125px;
+      position: absolute;
+      bottom: 0;
+      left: 50px;
+      background-image: url('karateka.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      transition: bottom 0.15s;
+    }
+
+    #cactus {
+      width: 105px;
+      height: 105px;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      animation: moveCactus 4.5s linear infinite;
+    }
+
+    @keyframes moveCactus {
+      from { right: -20px; }
+      to { right: 100%; }
+    }
+
+    .jump {
+      animation: jump 0.85s ease-out;
+    }
+
+    @keyframes jump {
+      0% { bottom: 0; }
+      50% { bottom: 155px; }
+      100% { bottom: 0; }
+    }
+
+    #levelScreen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #levelScreen button {
+      margin-top: 30px;
+      padding: 15px 40px;
+      font-size: 22px;
+      cursor: pointer;
+      background-color: #1c02de;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      transition: background-color 0.3s;
+    }
+
+    #levelScreen button:hover {
+      background-color: #3b3bff;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="startScreen">
+    <h1>La Via del Budō</h1>
+    <button id="startButton">Inizia il gioco</button>
+  </div>
+
+  <div id="levelScreen">
+    <div id="levelMessage"></div>
+    <button id="continueButton">Continua</button>
+  </div>
+
+  <div id="game">
+    <div id="dino"></div>
+    <div id="cactus"></div>
+  </div>
+
+  <script>
+    const dino = document.getElementById("dino");
+    const cactus = document.getElementById("cactus");
+    const game = document.getElementById("game");
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
+
+    const levelScreen = document.getElementById("levelScreen");
+    const levelMessage = document.getElementById("levelMessage");
+    const continueButton = document.getElementById("continueButton");
+
+    const suoniSalto = ["suono_salto1.mp3", "suono_salto2.mp3", "suono_salto3.mp3"];
+    let suonoCorrente;
+
+    const musicaGioco = new Audio("musica_gioco.mp3");
+    musicaGioco.loop = true;
+    musicaGioco.volume = 0.2;
+
+    const musicaFinale = new Audio("musica_finale.mp3");
+    musicaFinale.loop = true;
+    musicaFinale.volume = 0.3;
+
+    let livello = 1;
+    let giocoFinito = false;
+    let gameStarted = false;
+
+    const ostacoli = [
+      "ostacolo1.png",
+      "ostacolo2.png",
+      "ostacolo3.png",
+      "ostacolo4.png",
+      "ostacolo5.png"
+    ];
+
+    const messaggiLivello = {
+      2: "Grande!! Sei riuscito a superare i ninja! Ora ti trovi di fronte alle porte del Dojo.",
+      3: "Fantastico!! Hai affrontato le guardie del Dojo! Ma attenzione, ora ci sono gli allievi!",
+      4: "Ottimo lavoro! Sei sul tatami. Chi ci sarà ora?",
+      5: "I più valorosi si presentano! Dai il massimo!",
+      6: "Il Maestro ti sfida: \"Se mi batti, ti insegnerò la Via!\"",
+      7: "Hai vinto! Il Maestro ti insegna i segreti delle arti marziali."
+    };
+
+    function randomizzaOstacolo() {
+      const immagine = ostacoli[Math.floor(Math.random() * ostacoli.length)];
+      cactus.style.backgroundImage = `url('${immagine}')`;
+    }
+
+    function aggiornaVelocita() {
+      const durate = {
+        1: 4.5, 2: 4.0, 3: 3.5, 4: 3.2, 5: 3.0, 6: 2.8, 7: 2.5
+      };
+      cactus.style.animationDuration = (durate[livello] || 1.5) + "s";
+    }
+
+    function playSuonoSaltoCasuale() {
+      if (suonoCorrente) {
+        suonoCorrente.pause();
+        suonoCorrente.currentTime = 0;
+      }
+      const idx = Math.floor(Math.random() * suoniSalto.length);
+      suonoCorrente = new Audio(suoniSalto[idx]);
+      suonoCorrente.play();
+    }
+
+    function mostraFinale() {
+      giocoFinito = true;
+      musicaGioco.pause();
+      musicaFinale.play().catch(() => {});
+
+      cactus.style.display = "none";
+      dino.style.display = "none";
+
+      const finale = document.createElement("div");
+      finale.style.position = "absolute";
+      finale.style.top = "0";
+      finale.style.left = "0";
+      finale.style.width = "100%";
+      finale.style.height = "100%";
+      finale.style.backgroundImage = "url('finale.jpg')";
+      finale.style.backgroundSize = "cover";
+      finale.style.backgroundPosition = "center";
+      finale.style.display = "flex";
+      finale.style.flexDirection = "column";
+      finale.style.justifyContent = "flex-end";
+      finale.style.alignItems = "center";
+      finale.style.paddingBottom = "30px";
+
+      const bottone = document.createElement("button");
+      bottone.textContent = "Contattaci su WhatsApp";
+      bottone.style.padding = "12px 24px";
+      bottone.style.fontSize = "22px";
+      bottone.style.cursor = "pointer";
+      bottone.style.background = "#25D366";
+      bottone.style.color = "white";
+      bottone.style.border = "none";
+      bottone.style.borderRadius = "8px";
+      bottone.style.boxShadow = "0 4px 6px rgba(0,0,0,0.3)";
+      bottone.onclick = () => {
+        window.open("https://wa.me/3515221532", "_blank");
+      };
+
+      finale.appendChild(bottone);
+      game.appendChild(finale);
+    }
+
+    function mostraSchermataLivello() {
+      cactus.style.animationPlayState = 'paused';
+      game.style.display = 'none';
+
+      if (livello > 1 && livello <= 7) {
+        levelMessage.textContent = messaggiLivello[livello] || "";
+        levelScreen.style.display = 'flex';
+      }
+    }
+
+    function riprendiGioco() {
+      levelScreen.style.display = 'none';
+      game.style.display = 'block';
+      cactus.style.animationPlayState = 'running';
+    }
+
+    function startGame() {
+      startScreen.style.display = 'none';
+      livello = 1;
+      giocoFinito = false;
+      game.style.display = 'block';
+
+      musicaGioco.play().catch(() => {});
+
+      aggiornaVelocita();
+      randomizzaOstacolo();
+
+      cactus.addEventListener("animationiteration", randomizzaOstacolo);
+      document.addEventListener("keydown", saltoHandler);
+      document.addEventListener("touchstart", touchSaltoHandler);
+
+      controlloCollisione = setInterval(controlloCollisioneFunc, 10);
+      avviaTimerLivello();
+    }
+
+    function avviaTimerLivello() {
+      if (timerLivelli) clearTimeout(timerLivelli);
+      timerLivelli = setTimeout(() => {
+        livello++;
+        aggiornaVelocita();
+        if (livello <= 7) {
+          mostraSchermataLivello();
+        } else {
+          mostraFinale();
+        }
+      }, 25000);
+    }
+
+    function saltoHandler(event) {
+      if (giocoFinito) return;
+      if (event.code === "Space" && !dino.classList.contains("jump")) {
+        dino.classList.add("jump");
+        playSuonoSaltoCasuale();
+        setTimeout(() => dino.classList.remove("jump"), 850);
+      }
+    }
+
+    function touchSaltoHandler(event) {
+      if (giocoFinito) return;
+      event.preventDefault();
+      if (!dino.classList.contains("jump")) {
+        dino.classList.add("jump");
+        playSuonoSaltoCasuale();
+        setTimeout(() => dino.classList.remove("jump"), 850);
+      }
+    }
+
+    function controlloCollisioneFunc() {
+      if (giocoFinito) return;
+      let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
+      let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left"));
+      if (cactusLeft < 90 && cactusLeft > 40 && dinoTop < 40) {
+        alert("Hai perso!");
+        window.location.reload();
+      }
+    }
+
+    let timerLivelli;
+    let controlloCollisione;
+
+    startButton.addEventListener("click", () => {
+      if (!gameStarted) {
+        startGame();
+        gameStarted = true;
+      }
+    });
+
+    continueButton.addEventListener("click", () => {
+      riprendiGioco();
+      if (livello < 7) {
+        avviaTimerLivello();
+      } else {
+        mostraFinale();
+      }
+    });
+  </script>
+</body>
+</html>
