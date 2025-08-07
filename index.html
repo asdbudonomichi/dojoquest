@@ -2,16 +2,16 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Dino Game Clone</title>
+  <title>La Via del Budō</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      margin: 0;
-      background: #000000;
-      overflow: hidden;
       font-family: sans-serif;
+      background: #000;
+      overflow: hidden;
     }
 
-    /* SCHERMATA INIZIALE */
     #startScreen {
       display: flex;
       flex-direction: column;
@@ -29,14 +29,13 @@
       margin-top: 20px;
     }
 
-    /* GIOCO */
     #game {
       display: none;
       width: 100%;
       height: 100vh;
       max-height: 650px;
       background: url('sfondo.jpg') no-repeat center center;
-      border-bottom: 1.5px solid #ff0000;
+      background-size: cover;
       position: relative;
       overflow: hidden;
     }
@@ -49,7 +48,7 @@
       left: 50px;
       background-image: url('karateka.png');
       background-size: contain;
-      background-repeat: no-repeat;   
+      background-repeat: no-repeat;
       transition: bottom 0.15s;
     }
 
@@ -59,19 +58,15 @@
       position: absolute;
       bottom: 0;
       right: 0;
+      background-image: url('cactus1.png');
       background-size: contain;
       background-repeat: no-repeat;
-      background-position: center;
       animation: moveCactus 4.5s linear infinite;
     }
 
     @keyframes moveCactus {
-      from {
-        right: -20px;
-      }
-      to {
-        right: 100%;
-      }
+      from { right: -20px; }
+      to { right: 100%; }
     }
 
     .jump {
@@ -84,25 +79,22 @@
       100% { bottom: 0; }
     }
 
-    /* SCHERMATA LIVELLO */
     #levelScreen {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%;
       height: 100vh;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0, 0, 0, 0.95);
       color: white;
-      font-size: clamp(28px, 6vw, 48px); /* <-- DIMENSIONE TESTO ADATTABILE */
-      line-height: 1.4;
-      padding: 20px;
+      font-size: clamp(28px, 6vw, 48px);
       text-align: center;
-      font-weight: bold;
+      z-index: 1000;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
     }
 
     #levelScreen button {
@@ -114,35 +106,135 @@
       color: white;
       border: none;
       border-radius: 6px;
-      transition: background-color 0.3s;
     }
 
-    #levelScreen button:hover {
-      background-color: #3b3bff;
+    #finalScreen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100vh;
+      background: black;
+      background-image: url('locandina_finale.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 2000;
     }
+
+    audio { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- SCHERMATA INIZIALE -->
   <div id="startScreen">
     <h1>La Via del Budō</h1>
     <button id="startButton">Inizia il gioco</button>
   </div>
 
-  <!-- SCHERMATA LIVELLO -->
-  <div id="levelScreen">
-    <div id="levelMessage"></div>
-    <button id="continueButton">Continua</button>
-  </div>
-
-  <!-- CONTENITORE DEL GIOCO -->
   <div id="game">
     <div id="dino"></div>
     <div id="cactus"></div>
   </div>
 
-  <!-- RESTO DELLO SCRIPT JS INVARIATO... -->
-  <!-- Puoi lasciare tutto il codice JS che già hai senza modificarlo -->
+  <div id="levelScreen">
+    <div id="levelMessage"></div>
+    <button id="continueButton">Continua</button>
+  </div>
+
+  <div id="finalScreen"></div>
+
+  <audio id="jumpSound" src="jump.mp3"></audio>
+  <audio id="bgMusic" src="musica.mp3" loop></audio>
+  <audio id="finalMusic" src="musica_finale.mp3"></audio>
+
+  <script>
+    const startButton = document.getElementById("startButton");
+    const game = document.getElementById("game");
+    const dino = document.getElementById("dino");
+    const cactus = document.getElementById("cactus");
+    const jumpSound = document.getElementById("jumpSound");
+    const bgMusic = document.getElementById("bgMusic");
+    const finalMusic = document.getElementById("finalMusic");
+    const levelScreen = document.getElementById("levelScreen");
+    const levelMessage = document.getElementById("levelMessage");
+    const continueButton = document.getElementById("continueButton");
+    const finalScreen = document.getElementById("finalScreen");
+
+    let isJumping = false;
+    let currentLevel = 1;
+    let levelTimer;
+
+    const levelMessages = {
+      2: "Grande!! Sei riuscito a superare i ninja! Ora ti trovi di fronte alle porte del Dojo.",
+      3: "Fantastico sei riuscito ad affrontare le guardie delle porte del Dojo! Ora entra... Ma noooo!!!! Ci sono gli allievi del Dojo che vogliono ostacolare il tuo cammino!!!",
+      4: "Caspita sei veramente forte, ora puoi entrare sul tatami, dove troverai....",
+      5: "Non pensare di averla vinta!!! Ora dovrai affrontare altri allievi più valorosi",
+      6: "Ti si presenta il Maestro che dice: \"Tu essere molto forte, ma tu manca di esperienza, se tu battere me io insegnerò la via\"",
+      7: "Tu veramente bravo!!! Io ora insegnare te i segreti di arte marziale!"
+    };
+
+    function jump() {
+      if (!isJumping) {
+        isJumping = true;
+        dino.classList.add("jump");
+        jumpSound.play();
+        setTimeout(() => {
+          dino.classList.remove("jump");
+          isJumping = false;
+        }, 850);
+      }
+    }
+
+    function showLevelScreen(level) {
+      clearInterval(levelTimer);
+      game.style.display = "none";
+      levelMessage.innerHTML = levelMessages[level];
+      levelScreen.style.display = "flex";
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel > 7) {
+        showFinalScreen();
+      } else {
+        levelScreen.style.display = "none";
+        game.style.display = "block";
+        startLevelTimer();
+      }
+    }
+
+    function showFinalScreen() {
+      game.style.display = "none";
+      levelScreen.style.display = "none";
+      finalScreen.style.display = "block";
+      bgMusic.pause();
+      finalMusic.play();
+    }
+
+    function startLevelTimer() {
+      levelTimer = setTimeout(() => {
+        showLevelScreen(currentLevel);
+      }, 25000);
+    }
+
+    function startGame() {
+      startButton.parentElement.style.display = "none";
+      game.style.display = "block";
+      bgMusic.play();
+      currentLevel = 1;
+      startLevelTimer();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") jump();
+    });
+
+    document.addEventListener("touchstart", () => {
+      jump();
+    });
+
+    continueButton.addEventListener("click", nextLevel);
+    startButton.addEventListener("click", startGame);
+  </script>
 </body>
 </html>
