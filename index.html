@@ -144,7 +144,6 @@
   </div>
 
   <script>
-    // (Il codice JS resta invariato rispetto a quanto mi hai fornito)
     const dino = document.getElementById("dino");
     const cactus = document.getElementById("cactus");
     const game = document.getElementById("game");
@@ -251,11 +250,10 @@
         window.open("https://wa.me/393515221532?text=Ho%20battuto%20il%20maestro%2C%20posso%20avere%20maggiori%20informazioni%20sui%20vostri%20corsi%3F", "_blank");
       };
 
-  
       finale.appendChild(img);
       finale.appendChild(bottone);
       game.appendChild(finale);
-    
+    }
 
     function mostraSchermataLivello() {
       cactus.style.animationPlayState = 'paused';
@@ -340,31 +338,4 @@
       let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
       let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left"));
       if (cactusLeft < 90 && cactusLeft > 40 && dinoTop < 40) {
-        alert("Hai perso!");
-        window.location.reload();
-      }
-    }
-
-    let timerLivelli;
-    let controlloCollisione;
-
-    startButton.addEventListener("click", () => {
-      if (!gameStarted) {
-        startGame();
-        gameStarted = true;
-      }
-    });
-
-    continueButton.addEventListener("click", () => {
-      riprendiGioco();
-      if (livello < 7) {
-        avviaTimerLivello();
-      } else {
-        mostraFinale();
-      }
-    });
-  </script>
-
-</body>
-</html>
-
+        alert
