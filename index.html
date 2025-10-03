@@ -10,7 +10,6 @@
       overflow: hidden;
       font-family: sans-serif;
     }
-
     /* SCHERMATA INIZIALE */
     #startScreen {
       display: flex;
@@ -21,27 +20,23 @@
       background: #1c02de;
       color: white;
     }
-
     #startButton {
       padding: 15px 30px;
       font-size: 22px;
       cursor: pointer;
       margin-top: 20px;
     }
-
     /* GIOCO (inizialmente nascosto) */
     #game {
       display: none;
       width: 100%;
-      height: 100vh;          /* Altezza piena viewport */
-      max-height: 650px;      /* Altezza massima */
+      height: 100vh;
+      max-height: 650px;
       background: url('sfondo.jpg') no-repeat center center;
-      /* RIMOSSO background-size: contain; */
-      border-bottom: 1.5px solid #ff0000; /* Riquadro rosso più sottile */
+      border-bottom: 1.5px solid #ff0000;
       position: relative;
       overflow: hidden;
     }
-
     #dino {
       width: 200px;
       height: 200px;
@@ -53,7 +48,6 @@
       background-repeat: no-repeat;   
       transition: bottom 0.15s;
     }
-
     #cactus {
       width: 150px;
       height: 150px;
@@ -65,26 +59,18 @@
       background-position: center;
       animation: moveCactus 4.5s linear infinite;
     }
-
     @keyframes moveCactus {
-      from {
-        right: -20px;
-      }
-      to {
-        right: 100%;
-      }
+      from { right: -20px; }
+      to { right: 100%; }
     }
-
     .jump {
       animation: jump 0.85s ease-out;
     }
-
     @keyframes jump {
-      0% { bottom: 00px; }
+      0% { bottom: 0px; }
       50% { bottom: 325px; }
-      100% { bottom: 00px; }
+      100% { bottom: 0px; }
     }
-
     /* SCHERMATA LIVELLO */
     #levelScreen {
       display: none;
@@ -99,14 +85,12 @@
       text-align: center;
       padding: 20px;
       box-sizing: border-box;
-
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-
     #levelScreen button {
       margin-top: 30px;
       padding: 15px 40px;
@@ -192,24 +176,13 @@
     }
 
     function aggiornaVelocita() {
-      const durate = {
-        1: 4.5,
-        2: 4.0,
-        3: 3.5,
-        4: 3.2,
-        5: 3.0,
-        6: 2.8,
-        7: 2.5
-      };
+      const durate = {1: 4.5, 2: 4.0, 3: 3.5, 4: 3.2, 5: 3.0, 6: 2.8, 7: 2.5};
       let durata = durate[livello] || 1.5;
       cactus.style.animationDuration = durata + "s";
     }
 
     function playSuonoSaltoCasuale() {
-      if (suonoCorrente) {
-        suonoCorrente.pause();
-        suonoCorrente.currentTime = 0;
-      }
+      if (suonoCorrente) { suonoCorrente.pause(); suonoCorrente.currentTime = 0; }
       const idx = Math.floor(Math.random() * suoniSalto.length);
       suonoCorrente = new Audio(suoniSalto[idx]);
       suonoCorrente.play();
@@ -258,7 +231,6 @@
     function mostraSchermataLivello() {
       cactus.style.animationPlayState = 'paused';
       game.style.display = 'none';
-
       if (livello > 1 && livello <= 7) {
         levelMessage.textContent = messaggiLivello[livello] || "";
         levelScreen.style.display = 'flex';
@@ -276,24 +248,13 @@
       livello = 1;
       giocoFinito = false;
       game.style.display = 'block';
-
-      musicaGioco.play().catch((e) => {
-        console.log("Autoplay bloccato, attendi interazione.");
-      });
-
+      musicaGioco.play().catch((e) => { console.log("Autoplay bloccato."); });
       aggiornaVelocita();
       randomizzaOstacolo();
-
       cactus.addEventListener("animationiteration", randomizzaOstacolo);
-
       document.addEventListener("keydown", saltoHandler);
-
-      // Listener touch per salto smartphone
       document.addEventListener("touchstart", touchSaltoHandler);
-
       controlloCollisione = setInterval(controlloCollisioneFunc, 10);
-
-      // Avvia timer primo livello (da 1 a 2)
       avviaTimerLivello();
     }
 
@@ -302,11 +263,7 @@
       timerLivelli = setTimeout(() => {
         livello++;
         aggiornaVelocita();
-        if (livello <= 7) {
-          mostraSchermataLivello();
-        } else {
-          mostraFinale();
-        }
+        if (livello <= 7) { mostraSchermataLivello(); } else { mostraFinale(); }
       }, 25000);
     }
 
@@ -315,9 +272,7 @@
       if (event.code === "Space" && !dino.classList.contains("jump")) {
         dino.classList.add("jump");
         playSuonoSaltoCasuale();
-        setTimeout(() => {
-          dino.classList.remove("jump");
-        }, 850);
+        setTimeout(() => { dino.classList.remove("jump"); }, 850);
       }
     }
 
@@ -327,9 +282,7 @@
       if (!dino.classList.contains("jump")) {
         dino.classList.add("jump");
         playSuonoSaltoCasuale();
-        setTimeout(() => {
-          dino.classList.remove("jump");
-        }, 850);
+        setTimeout(() => { dino.classList.remove("jump"); }, 850);
       }
     }
 
@@ -338,4 +291,23 @@
       let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
       let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left"));
       if (cactusLeft < 90 && cactusLeft > 40 && dinoTop < 40) {
-        alert
+        alert("Hai perso!");
+        window.location.reload();
+      }
+    }
+
+    let timerLivelli;
+    let controlloCollisione;
+
+    startButton.addEventListener("click", () => {
+      if (!gameStarted) { startGame(); gameStarted = true; }
+    });
+
+    continueButton.addEventListener("click", () => {
+      riprendiGioco();
+      if (livello < 7) { avviaTimerLivello(); } else { mostraFinale(); }
+    });
+  </script>
+
+</body>
+</html>
