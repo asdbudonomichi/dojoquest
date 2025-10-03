@@ -164,7 +164,7 @@
 
     const musicaFinale = new Audio("musica_finale.mp3");
     musicaFinale.loop = true;
-    musicaFinale.volume = 0.;
+    musicaFinale.volume = 0.3;
 
     let livello = 1;
     let giocoFinito = false;
@@ -237,52 +237,19 @@
       finale.style.alignItems = "center";
       finale.style.color = "white";
 
-      function mostraFinale() {
-  giocoFinito = true;
-  musicaGioco.pause();
-  musicaFinale.play().catch(() => {});
+      const img = document.createElement("img");
+      img.src = "finale.jpg";
+      img.style.maxWidth = "25%";
+      img.style.marginBottom = "20px";
 
-  cactus.style.display = "none";
-  dino.style.display = "none";
-
-  const finale = document.createElement("div");
-  finale.style.position = "absolute";
-  finale.style.top = "0";
-  finale.style.left = "0";
-  finale.style.width = "100%";
-  finale.style.height = "100%";
-  finale.style.backgroundColor = "#000";
-  finale.style.display = "flex";
-  finale.style.flexDirection = "column";
-  finale.style.justifyContent = "center";
-  finale.style.alignItems = "center";
-  finale.style.color = "white";
-
-  // VIDEO invece dell'immagine
-  const video = document.createElement("video");
-  video.src = "finale2.mp4";   // <-- metti il tuo file qui
-  video.autoplay = true;
-  video.playsInline = true;
-  video.controls = false;     // puoi mettere true se vuoi i comandi
-  video.loop = false;
-  video.style.width = "100%";
-  video.style.height = "100%";
-  video.style.objectFit = "cover";
-  finale.appendChild(video);
-
-  const bottone = document.createElement("button");
-  bottone.textContent = "Contattaci su WhatsApp";
-  bottone.style.position = "absolute";
-  bottone.style.bottom = "20px";
-  bottone.style.padding = "10px 20px";
-  bottone.style.fontSize = "20px";
-  bottone.style.cursor = "pointer";
-  bottone.onclick = () => {
-    window.open(
-      "https://wa.me/393515221532?text=Ho%20battuto%20il%20maestro%2C%20posso%20avere%20maggiori%20informazioni%20sui%20vostri%20corsi%3F",
-      "_blank"
-    );
-  };
+      const bottone = document.createElement("button");
+      bottone.textContent = "Contattaci su WhatsApp";
+      bottone.style.padding = "10px 20px";
+      bottone.style.fontSize = "20px";
+      bottone.style.cursor = "pointer";
+      bottone.onclick = () => {
+        window.open("https://wa.me/393515221532?text=Ho%20battuto%20il%20maestro%2C%20posso%20avere%20maggiori%20informazioni%20sui%20vostri%20corsi%3F", "_blank");
+      };
 
   finale.appendChild(bottone);
   game.appendChild(finale);
@@ -404,6 +371,7 @@
 
 </body>
 </html>
+
 
 
 
